@@ -92,22 +92,36 @@ export class HttpMcpServer implements IMcpServer {
 
     server.tool(
       'create_todo',
-      'Creates a todo',
-      { description: z.string().min(1), status: statusSchema.default('todo') },
+      'Creates a new todo and returns it as JSON (id, description, status, createdDate). ' +
+        'Use the returned id to update or delete the todo later.',
+      {
+        description: z.string().min(1).describe('What needs to be done, e.g. "Buy milk". Must not be empty.'),
+        status: statusSchema.default('todo').describe('Initial status: "todo" (not started), "doing" (in progress) or "done". Defaults to "todo".')
+      },
       async (params) => json(await this.todoService.create(params))
     )
 
     server.tool(
       'list_todos',
-      'Lists todos, oldest first',
-      { pageNumber: z.number().int().min(0).optional(), pageSize: z.number().int().min(1).max(100).optional() },
+      'Lists todos as a JSON array, oldest first, one page at a time. ' +
+        'An array shorter than pageSize means there are no more pages. ' +
+        'Use this to find the id of a todo before calling update_todo or delete_todo.',
+      {
+        pageNumber: z.number().int().min(0).optional().describe('Zero-based page index: 0 is the first page. Defaults to 0.'),
+        pageSize: z.number().int().min(1).max(100).optional().describe('Todos per page, from 1 to 100. Defaults to 20.')
+      },
       async (params) => json(await this.todoService.list(params))
     )
 
     server.tool(
       'update_todo',
-      'Updates the description and/or status of a todo',
-      { id: z.string(), description: z.string().min(1).optional(), status: statusSchema.optional() },
+      'Changes the description and/or status of an existing todo and returns the updated todo as JSON. ' +
+        'Omitted fields are left unchanged. Returns an error if no todo has the given id.',
+      {
+        id: z.string().describe('Id of the todo to update, as returned by create_todo or list_todos.'),
+        description: z.string().min(1).optional().describe('New description. Must not be empty. Omit to keep the current one.'),
+        status: statusSchema.optional().describe('New status: "todo" (not started), "doing" (in progress) or "done". Omit to keep the current one.')
+      },
       async ({ id, ...params }) => {
         try {
           return json(await this.todoService.update(id, params))
@@ -119,8 +133,11 @@ export class HttpMcpServer implements IMcpServer {
 
     server.tool(
       'delete_todo',
-      'Deletes a todo',
-      { id: z.string() },
+      'Permanently deletes a todo. This cannot be undone. ' +
+        'Returns { "deleted": id } on success, or an error if no todo has the given id.',
+      {
+        id: z.string().describe('Id of the todo to delete, as returned by create_todo or list_todos.')
+      },
       async ({ id }) => {
         try {
           await this.todoService.delete(id)
