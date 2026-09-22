@@ -1,22 +1,15 @@
+import type { Todo } from '@/domain/index.ts'
+import { TodoNotFoundError } from '@/domain/errors/index.ts'
 import type {
   CreateTodoParams,
   ITodoRepository,
-  Todo,
   UpdateTodoParams
-} from './interfaces/index.ts'
-
-export class TodoNotFoundError extends Error {
-  constructor (todoId: string) {
-    super(`todo ${todoId} not found`)
-  }
-}
+} from '@/application/ports/index.ts'
 
 export interface ListTodosPage {
   pageNumber?: number
   pageSize?: number
 }
-
-const DEFAULT_PAGE_SIZE = 20
 
 export class TodoService {
   private readonly todoRepository: ITodoRepository
@@ -29,7 +22,7 @@ export class TodoService {
     return this.todoRepository.create(params)
   }
 
-  list ({ pageNumber = 0, pageSize = DEFAULT_PAGE_SIZE }: ListTodosPage = {}): Promise<Todo[]> {
+  list ({ pageNumber = 0, pageSize = 20 }: ListTodosPage = {}): Promise<Todo[]> {
     return this.todoRepository.list({ limit: pageSize, offset: pageNumber * pageSize })
   }
 

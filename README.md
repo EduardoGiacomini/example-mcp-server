@@ -25,7 +25,7 @@ npm start
 The server listens on `http://localhost:3999/mcp` and prints `example-mcp-server on 3999`.
 Stop it with `Ctrl+C`.
 
-Port and auth token are hardcoded in `index.ts`:
+Port and auth token are hardcoded in `src/index.ts`:
 
 | Setting    | Value        |
 | ---------- | ------------ |

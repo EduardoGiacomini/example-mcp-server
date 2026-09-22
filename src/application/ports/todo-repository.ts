@@ -1,4 +1,4 @@
-import type { Todo, TodoStatus } from './todo.ts'
+import type { Todo, TodoStatus } from '@/domain/index.ts'
 
 export interface CreateTodoParams {
   description: string
